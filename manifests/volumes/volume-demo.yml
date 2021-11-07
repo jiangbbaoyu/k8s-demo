@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-volume-deploy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: myapp-volume
+     release: canary
+  template:
+    metadata:
+      labels: 
+        app: myapp-volume
+        release: canary
+    spec: 
+      volumes: 
+      - name: html
+        emptyDir: {}
+      containers:
+      - name: myapp
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html/
+        image: ikubernetes/myapp:v1
+        ports: 
+        - name: http
+          containerPort: 80
+      - name: busybox
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: html
+          mountPath: /data/
+        image: busybox:latest
+        command: ["/bin/sh"]
+        args: ["-c","while true; do echo $(date) >> /data/index.html; sleep 2; done"]
